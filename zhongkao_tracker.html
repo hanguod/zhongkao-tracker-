@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 中考目标追踪 - 加油冲刺</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* 头部区域 */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        .days-counter {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 8px 25px;
+            border-radius: 30px;
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        /* 总体进度卡片 */
+        .overall-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+            animation: fadeIn 1s ease;
+        }
+
+        .overall-card h2 {
+            color: #a0a0a0;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .progress-ring {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .progress-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 12;
+            stroke-linecap: round;
+        }
+
+        .progress-ring .bg {
+            stroke: rgba(255,255,255,0.1);
+        }
+
+        .progress-ring .progress {
+            stroke: url(#progressGradient);
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .progress-ring .percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .stat-item .value {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #f093fb;
+        }
+
+        .stat-item .label {
+            color: #a0a0a0;
+            font-size: 0.85em;
+        }
+
+        /* 科目卡片网格 */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .subject-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .subject-card.achieved {
+            border: 2px solid #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .subject-card.achieved::before {
+            content: '✅ 已达标';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4ade80;
+            color: #000;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .subject-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subject-icon {
+            font-size: 1.5em;
+        }
+
+        .subject-name h3 {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .target-score {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        .target-score span {
+            color: #f093fb;
+            font-weight: bold;
+        }
+
+        /* 进度条 */
+        .progress-bar-container {
+            margin-bottom: 15px;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+        }
+
+        .progress-labels .current {
+            color: #4ade80;
+        }
+
+        .progress-labels .target {
+            color: #f093fb;
+        }
+
+        .progress-bar {
+            height: 24px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar .target-line {
+            position: absolute;
+            height: 100%;
+            width: 3px;
+            background: #fff;
+            z-index: 2;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 1s ease;
+            position: relative;
+        }
+
+        .progress-bar .fill.achieved {
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+        }
+
+        .progress-bar .fill.approaching {
+            background: linear-gradient(90deg, #60a5fa, #3b82f6);
+        }
+
+        .progress-bar .fill.behind {
+            background: linear-gradient(90deg, #fb923c, #f97316);
+        }
+
+        .progress-bar .fill.critical {
+            background: linear-gradient(90deg, #f87171, #ef4444);
+        }
+
+        .progress-percent {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* 差距显示 */
+        .gap-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .gap-info .gap-label {
+            font-size: 0.85em;
+            color: #a0a0a0;
+        }
+
+        .gap-info .gap-value {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .gap-info .gap-value.positive {
+            color: #4ade80;
+        }
+
+        .gap-info .gap-value.negative {
+            color: #f87171;
+        }
+
+        .gap-info .gap-value.zero {
+            color: #4ade80;
+        }
+
+        /* 成绩输入区 */
+        .input-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .input-section h2 {
+            margin-bottom: 20px;
+            color: #f093fb;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+
+        .input-group label .emoji {
+            margin-right: 5px;
+        }
+
+        .input-group input {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 12px 15px;
+            color: #fff;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #f093fb;
+            background: rgba(255,255,255,0.15);
+        }
+
+        .input-group input.achieved {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 历史记录 */
+        .history-section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .history-section h2 {
+            margin-bottom: 20px;
+            color: #f093fb;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .history-table th {
+            background: rgba(255,255,255,0.1);
+            color: #a0a0a0;
+            font-weight: normal;
+        }
+
+        .history-table tr:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .history-table .date {
+            color: #a0a0a0;
+        }
+
+        .history-table .score-up {
+            color: #4ade80;
+        }
+
+        .history-table .score-down {
+            color: #f87171;
+        }
+
+        /* 激励语 */
+        .motivation {
+            text-align: center;
+            padding: 30px;
+            animation: fadeInUp 1.2s ease;
+        }
+
+        .motivation .quote {
+            font-size: 1.5em;
+            color: #f093fb;
+            margin-bottom: 10px;
+        }
+
+        .motivation .author {
+            color: #a0a0a0;
+            font-size: 0.9em;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 2s ease infinite;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .subjects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.6em;
+            }
+
+            .stats-row {
+                gap: 20px;
+            }
+
+            .history-table {
+                font-size: 0.85em;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 8px 5px;
+            }
+        }
+
+        /* 删除按钮样式 */
+        .delete-btn {
+            background: rgba(248, 113, 113, 0.2);
+            border: 1px solid #f87171;
+            color: #f87171;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8em;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #f87171;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>🎯 中考目标追踪</h1>
+                    <p class="subtitle">每一步努力，都是向梦想靠近</p>
+                </div>
+                <button onclick="openSettings()" style="background: rgba(255,255,255,0.1); border: none; padding: 10px 20px; border-radius: 20px; color: #fff; cursor: pointer; font-size: 0.9em;">
+                    ⚙️ 设置
+                </button>
+            </div>
+            <div class="days-counter" id="daysCounter">
+                ⏰ 距离中考还有 <span id="daysLeft">84</span> 天
+            </div>
+        </div>
+
+        <!-- 总体进度 -->
+        <div class="overall-card">
+            <h2>📊 总体完成度</h2>
+            <div class="progress-ring">
+                <svg width="180" height="180">
+                    <defs>
+                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#f093fb"/>
+                            <stop offset="100%" style="stop-color:#f5576c"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="bg" cx="90" cy="90" r="75"/>
+                    <circle class="progress" cx="90" cy="90" r="75"
+                            stroke-dasharray="471.24"
+                            stroke-dashoffset="471.24"
+                            id="progressCircle"/>
+                </svg>
+                <div class="percentage" id="overallPercent">0%</div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="value" id="achievedCount">2</div>
+                    <div class="label">已达标科目</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value" id="totalGap">0</div>
+                    <div class="label">距目标总差距</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value" id="fullScoreGap">0</div>
+                    <div class="label">距满分差距</div>
+                </div>
+                <div class="stat-item">
+                    <div class="value" id="recordCount">0</div>
+                    <div class="label">记录次数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 科目卡片 -->
+        <div class="subjects-grid" id="subjectsGrid">
+            <!-- 由JS动态生成 -->
+        </div>
+
+        <!-- 成绩输入 -->
+        <div class="input-section">
+            <h2>📝 录入今日成绩</h2>
+            <div class="input-grid" id="inputGrid">
+                <!-- 由JS动态生成 -->
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="saveRecord()">💾 保存记录</button>
+                <button class="btn btn-secondary" onclick="clearInputs()">🔄 重置</button>
+            </div>
+        </div>
+
+        <!-- 历史记录 -->
+        <div class="history-section">
+            <h2>📅 历史记录</h2>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>数学</th>
+                        <th>语文</th>
+                        <th>英语</th>
+                        <th>物理</th>
+                        <th>政治</th>
+                        <th>历史</th>
+                        <th>地理</th>
+                        <th>生物</th>
+                        <th>化学</th>
+                        <th>物实</th>
+                        <th>化实</th>
+                        <th>体育</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <!-- 由JS动态生成 -->
+                </tbody>
+            </table>
+            <p id="noRecords" style="text-align: center; color: #a0a0a0; padding: 20px;">
+                暂无记录，开始记录你的第一次成绩吧！
+            </p>
+        </div>
+
+        <!-- 激励语 -->
+        <div class="motivation" id="motivation">
+            <p class="quote">"努力不一定成功，但放弃一定失败"</p>
+            <p class="author">—— 加油，中考必胜！💪</p>
+        </div>
+    </div>
+
+    <script>
+        // 满分总分（12科目标分之和）
+        const FULL_SCORE = 790;
+
+        // 科目配置
+        const subjects = [
+            { id: 'math', name: '数学', icon: '📐', target: 115 },
+            { id: 'chinese', name: '语文', icon: '📚', target: 100 },
+            { id: 'english', name: '英语', icon: '🔤', target: 114 },
+            { id: 'physics', name: '物理', icon: '⚡', target: 78 },
+            { id: 'politics', name: '政治', icon: '🏛️', target: 68 },
+            { id: 'history', name: '历史', icon: '📜', target: 65 },
+            { id: 'geography', name: '地理', icon: '🌍', target: 40 },
+            { id: 'biology', name: '生物', icon: '🧬', target: 40 },
+            { id: 'chemistry', name: '化学', icon: '🧪', target: 50 },
+            { id: 'physics_exp', name: '物理实验', icon: '🔬', target: 10 },
+            { id: 'chemistry_exp', name: '化学实验', icon: '⚗️', target: 10 },
+            { id: 'sports', name: '体育', icon: '🏃', target: 60 }
+        ];
+
+        // 激励语库
+        const motivations = [
+            { quote: '"天道酬勤"', author: '每一分努力都不会被辜负' },
+            { quote: '"宝剑锋从磨砺出，梅花香自苦寒来"', author: '坚持就是胜利！' },
+            { quote: '"锲而不舍，金石可镂"', author: '每天进步一点点' },
+            { quote: '"长风破浪会有时，直挂云帆济沧海"', author: '梦想就在前方！' },
+            { quote: '"业精于勤，荒于嬉"', author: '专注让你更强大' },
+            { quote: '"千淘万漉虽辛苦，吹尽狂沙始到金"', author: '成功需要积累' },
+            { quote: '"会当凌绝顶，一览众山小"', author: '加油，冲刺中考！' },
+            { quote: '"路漫漫其修远兮，吾将上下而求索"', author: '探索，永无止境' }
+        ];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTargets(); // 先加载保存的目标
+            updateDaysCounter();
+            renderSubjects();
+            renderInputs();
+            loadHistory();
+            updateMotivation();
+        });
+
+        // 计算距离中考天数
+        function updateDaysCounter() {
+            const zhongkao = new Date('2026-06-21');
+            const today = new Date();
+            const diff = Math.ceil((zhongkao - today) / (1000 * 60 * 60 * 24));
+            document.getElementById('daysLeft').textContent = diff > 0 ? diff : 0;
+        }
+
+        // 渲染科目卡片
+        function renderSubjects() {
+            const grid = document.getElementById('subjectsGrid');
+            const latestScores = getLatestScores();
+
+            grid.innerHTML = subjects.map(subject => {
+                const currentScore = latestScores[subject.id] || 0;
+                const progress = subject.target > 0 ? Math.min((currentScore / subject.target) * 100, 100) : 0;
+                const gap = subject.target - currentScore;
+                const isAchieved = currentScore >= subject.target;
+                const targetPosition = 100; // 目标始终在100%位置
+
+                let statusClass = 'behind';
+                if (isAchieved) {
+                    statusClass = 'achieved';
+                } else if (progress >= 80) {
+                    statusClass = 'approaching';
+                } else if (progress < 60) {
+                    statusClass = 'critical';
+                }
+
+                return `
+                    <div class="subject-card ${isAchieved ? 'achieved' : ''}" id="card-${subject.id}">
+                        <div class="subject-header">
+                            <div class="subject-name">
+                                <span class="subject-icon">${subject.icon}</span>
+                                <h3>${subject.name}</h3>
+                            </div>
+                            <div class="target-score">目标: <span>${subject.target}分</span></div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-labels">
+                                <span class="current">当前: ${currentScore}分</span>
+                                <span class="target">目标: ${subject.target}分</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="fill ${statusClass}" style="width: ${progress}%">
+                                    <span class="progress-percent">${progress.toFixed(0)}%</span>
+                                </div>
+                                <div class="target-line" style="left: ${targetPosition}%"></div>
+                            </div>
+                        </div>
+                        <div class="gap-info">
+                            <span class="gap-label">距目标差距</span>
+                            <span class="gap-value ${gap <= 0 ? 'zero' : 'negative'}">
+                                ${gap <= 0 ? '🎉 已达标' : `-${gap}分`}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateOverallStats();
+        }
+
+        // 渲染输入框
+        function renderInputs() {
+            const grid = document.getElementById('inputGrid');
+            grid.innerHTML = subjects.map(subject => {
+                return `
+                    <div class="input-group">
+                        <label><span class="emoji">${subject.icon}</span>${subject.name} (目标: ${subject.target})</label>
+                        <input type="number"
+                               id="input-${subject.id}"
+                               min="0"
+                               max="150"
+                               placeholder="输入分数"
+                               oninput="updateCardFromInput('${subject.id}')">
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 根据输入实时更新科目卡片
+        function updateCardFromInput(subjectId) {
+            const input = document.getElementById(`input-${subjectId}`);
+            const score = parseFloat(input.value) || 0;
+            const subject = subjects.find(s => s.id === subjectId);
+            const card = document.getElementById(`card-${subjectId}`);
+
+            if (card && subject) {
+                const progress = subject.target > 0 ? Math.min((score / subject.target) * 100, 100) : 0;
+                const gap = subject.target - score;
+                const isAchieved = score >= subject.target && score > 0;
+
+                // 更新进度条
+                const fill = card.querySelector('.progress-bar .fill');
+                const percent = card.querySelector('.progress-percent');
+                if (fill) {
+                    fill.style.width = `${progress}%`;
+                    fill.className = 'fill';
+                    if (isAchieved) {
+                        fill.classList.add('achieved');
+                    } else if (progress >= 80) {
+                        fill.classList.add('approaching');
+                    } else if (progress < 60 && progress > 0) {
+                        fill.classList.add('critical');
+                    } else {
+                        fill.classList.add('behind');
+                    }
+                }
+                if (percent) percent.textContent = `${progress.toFixed(0)}%`;
+
+                // 更新当前分数显示
+                const currentLabel = card.querySelector('.progress-labels .current');
+                if (currentLabel) {
+                    currentLabel.textContent = score > 0 ? `当前: ${score}分` : '当前: -';
+                    currentLabel.style.color = isAchieved ? '#4ade80' : '#4ade80';
+                }
+
+                // 更新差距
+                const gapValue = card.querySelector('.gap-info .gap-value');
+                if (gapValue) {
+                    if (score === 0) {
+                        gapValue.textContent = '⏳ 待更新';
+                        gapValue.className = 'gap-value';
+                    } else if (gap <= 0) {
+                        gapValue.textContent = '🎉 已达标';
+                        gapValue.className = 'gap-value zero';
+                    } else {
+                        gapValue.textContent = `-${gap}分`;
+                        gapValue.className = 'gap-value negative';
+                    }
+                }
+
+                // 更新卡片样式
+                card.classList.toggle('achieved', isAchieved);
+
+                // 更新输入框样式
+                input.classList.toggle('achieved', isAchieved);
+            }
+        }
+
+        // 设置弹窗
+        function openSettings() {
+            const modal = document.createElement('div');
+            modal.id = 'settingsModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+
+            modal.innerHTML = `
+                <div style="background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 30px; border-radius: 20px; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+                    <h2 style="margin-bottom: 20px; color: #f093fb;">⚙️ 设置目标分数</h2>
+                    <div id="settingsForm"></div>
+                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                        <button onclick="saveSettings()" style="flex:1; padding: 12px; background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 25px; color: #fff; font-size: 1em; cursor: pointer; font-weight: bold;">💾 保存设置</button>
+                        <button onclick="closeSettings()" style="flex:1; padding: 12px; background: rgba(255,255,255,0.1); border: none; border-radius: 25px; color: #fff; font-size: 1em; cursor: pointer;">取消</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // 渲染设置表单
+            const form = document.getElementById('settingsForm');
+            form.innerHTML = subjects.map(subject => `
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <span style="width: 40px;">${subject.icon}</span>
+                    <span style="flex: 1;">${subject.name}</span>
+                    <input type="number"
+                           id="setting-${subject.id}"
+                           value="${subject.target}"
+                           min="0"
+                           max="150"
+                           style="width: 100px; padding: 10px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; text-align: center; font-size: 1.1em;">
+                </div>
+            `).join('');
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) modal.remove();
+        }
+
+        function saveSettings() {
+            subjects.forEach(subject => {
+                const input = document.getElementById(`setting-${subject.id}`);
+                const newTarget = parseFloat(input.value);
+                if (!isNaN(newTarget) && newTarget >= 0) {
+                    subject.target = newTarget;
+                }
+            });
+
+            localStorage.setItem('zhongkao_targets', JSON.stringify(subjects.map(s => ({ id: s.id, target: s.target }))));
+            localStorage.setItem('zhongkao_records', JSON.stringify([])); // 清空旧记录
+
+            closeSettings();
+            renderSubjects();
+            renderInputs();
+            loadHistory();
+            showToast('目标已更新！请重新录入成绩');
+        }
+
+        // 加载保存的目标
+        function loadTargets() {
+            const saved = localStorage.getItem('zhongkao_targets');
+            if (saved) {
+                const savedTargets = JSON.parse(saved);
+                savedTargets.forEach(s => {
+                    const subject = subjects.find(sub => sub.id === s.id);
+                    if (subject) subject.target = s.target;
+                });
+            }
+        }
+
+        // 获取最新成绩
+        function getLatestScores() {
+            const records = JSON.parse(localStorage.getItem('zhongkao_records') || '[]');
+            if (records.length === 0) {
+                // 默认返回空对象，不显示任何成绩
+                return {};
+            }
+            return records[records.length - 1].scores;
+        }
+
+        // 保存记录
+        function saveRecord() {
+            const newScores = {};
+            let hasInput = false;
+
+            // 只收集用户输入的分数
+            subjects.forEach(subject => {
+                const input = document.getElementById(`input-${subject.id}`);
+                const value = parseFloat(input.value);
+                if (!isNaN(value)) {
+                    newScores[subject.id] = value;
+                    hasInput = true;
+                }
+            });
+
+            if (!hasInput) {
+                alert('请至少输入一科成绩！');
+                return;
+            }
+
+            const records = JSON.parse(localStorage.getItem('zhongkao_records') || '[]');
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+            // 检查是否今天已有记录
+            const todayIndex = records.findIndex(r => r.date === dateStr);
+            if (todayIndex >= 0) {
+                // 合并：保留历史分数，只更新本次输入的科目
+                const oldScores = records[todayIndex].scores;
+                records[todayIndex].scores = { ...oldScores, ...newScores };
+            } else {
+                // 新增记录：合并历史最新成绩 + 本次输入
+                const lastRecord = records.length > 0 ? records[records.length - 1].scores : {};
+                records.push({ date: dateStr, scores: { ...lastRecord, ...newScores } });
+            }
+
+            localStorage.setItem('zhongkao_records', JSON.stringify(records));
+
+            // 重新渲染卡片（显示完整分数）
+            renderSubjects();
+            // 清空输入框
+            clearInputs();
+            // 更新历史记录
+            loadHistory();
+            updateMotivation();
+
+            // 显示成功提示
+            showToast('成绩已保存！🎉');
+        }
+
+        // 清除输入 - 只清空输入框，不修改卡片显示
+        function clearInputs() {
+            subjects.forEach(subject => {
+                const input = document.getElementById(`input-${subject.id}`);
+                input.value = '';
+                input.classList.remove('achieved');
+            });
+        }
+
+        // 重置所有数据（包括卡片）- 用于全新开始
+        function resetAll() {
+            subjects.forEach(subject => {
+                const input = document.getElementById(`input-${subject.id}`);
+                input.value = '';
+                input.classList.remove('achieved');
+            });
+
+            // 临时显示待更新状态
+            subjects.forEach(subject => {
+                const card = document.getElementById(`card-${subject.id}`);
+                if (card) {
+                    const currentLabel = card.querySelector('.progress-labels .current');
+                    const gapInfo = card.querySelector('.gap-info');
+                    const fill = card.querySelector('.progress-bar .fill');
+                    const percent = card.querySelector('.progress-percent');
+                    
+                    if (currentLabel) {
+                        currentLabel.textContent = '当前: -';
+                        currentLabel.style.color = '#a0a0a0';
+                    }
+                    if (gapInfo) {
+                        gapInfo.querySelector('.gap-value').textContent = '⏳ 待更新';
+                        gapInfo.querySelector('.gap-value').className = 'gap-value';
+                    }
+                    if (fill) {
+                        fill.style.width = '0%';
+                        fill.className = 'fill behind';
+                    }
+                    if (percent) percent.textContent = '0%';
+                    
+                    card.classList.remove('achieved');
+                }
+            });
+        }
+
+        // 加载历史记录
+        function loadHistory() {
+            const records = JSON.parse(localStorage.getItem('zhongkao_records') || '[]');
+            const tbody = document.getElementById('historyBody');
+            const noRecords = document.getElementById('noRecords');
+
+            if (records.length === 0) {
+                tbody.innerHTML = '';
+                noRecords.style.display = 'block';
+                return;
+            }
+
+            noRecords.style.display = 'none';
+
+            // 显示最新10条记录
+            const recentRecords = records.slice(-10).reverse();
+
+            tbody.innerHTML = recentRecords.map((record, idx) => {
+                const actualIdx = records.length - 1 - idx;
+                return `
+                    <tr>
+                        <td class="date">${record.date}</td>
+                        ${subjects.map(s => {
+                            const score = record.scores[s.id] ?? '-';
+                            const target = s.target;
+                            let className = '';
+                            if (score !== '-' && score >= target) {
+                                className = 'score-up';
+                            } else if (score !== '-' && score < target * 0.8) {
+                                className = 'score-down';
+                            }
+                            return `<td class="${className}">${score}</td>`;
+                        }).join('')}
+                        <td>
+                            <button class="delete-btn" onclick="deleteRecord(${actualIdx})">删除</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // 设置表格列宽（让新科目列更紧凑）
+            const style = document.createElement('style');
+            style.id = 'tableColStyle';
+            const oldStyle = document.getElementById('tableColStyle');
+            if (oldStyle) oldStyle.remove();
+            document.head.appendChild(style);
+            style.textContent = `
+                .history-table th, .history-table td {
+                    padding: 8px 6px !important;
+                    font-size: 0.85em;
+                }
+                .history-table th:first-child,
+                .history-table td:first-child {
+                    padding: 8px 12px !important;
+                }
+                .history-table th:last-child,
+                .history-table td:last-child {
+                    padding: 8px 10px !important;
+                }
+            `;
+
+            document.getElementById('recordCount').textContent = records.length;
+        }
+
+        // 删除记录
+        function deleteRecord(index) {
+            if (!confirm('确定要删除这条记录吗？')) return;
+
+            const records = JSON.parse(localStorage.getItem('zhongkao_records') || '[]');
+            records.splice(index, 1);
+            localStorage.setItem('zhongkao_records', JSON.stringify(records));
+
+            renderSubjects();
+            renderInputs();
+            loadHistory();
+        }
+
+        // 更新总体统计
+        function updateOverallStats() {
+            const latestScores = getLatestScores();
+            let totalScore = 0;
+            let totalTarget = 0;
+            let achievedCount = 0;
+            let totalGap = 0;
+
+            subjects.forEach(subject => {
+                const score = latestScores[subject.id] || 0;
+                totalScore += score;
+                totalTarget += subject.target;
+                if (score >= subject.target) {
+                    achievedCount++;
+                }
+                if (score < subject.target) {
+                    totalGap += (subject.target - score);
+                }
+            });
+
+            // 进度基于满分790计算
+            const overallProgress = FULL_SCORE > 0 ? (totalScore / FULL_SCORE) * 100 : 0;
+            const fullScoreGap = FULL_SCORE - totalScore; // 距满分790差距
+
+            // 更新环形进度
+            const circle = document.getElementById('progressCircle');
+            const circumference = 2 * Math.PI * 75;
+            const offset = circumference - (overallProgress / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            document.getElementById('overallPercent').textContent = `${overallProgress.toFixed(0)}%`;
+            document.getElementById('achievedCount').textContent = achievedCount;
+            document.getElementById('totalGap').textContent = totalGap;
+            document.getElementById('fullScoreGap').textContent = fullScoreGap;
+            document.getElementById('fullScoreGap').style.color = fullScoreGap <= 0 ? '#4ade80' : '#fb923c';
+        }
+
+        // 更新激励语
+        function updateMotivation() {
+            const latestScores = getLatestScores();
+            const totalScore = subjects.reduce((sum, s) => sum + (latestScores[s.id] || 0), 0);
+            const progress = totalScore / FULL_SCORE;
+
+            let motivationIndex;
+            if (progress >= 0.95) {
+                motivationIndex = Math.floor(Math.random() * 3); // 最好的几条
+            } else if (progress >= 0.8) {
+                motivationIndex = 3 + Math.floor(Math.random() * 2);
+            } else {
+                motivationIndex = 5 + Math.floor(Math.random() * 3);
+            }
+
+            const m = motivations[motivationIndex];
+            document.getElementById('motivation').innerHTML = `
+                <p class="quote">${m.quote}</p>
+                <p class="author">—— ${m.author} (当前${totalScore}/${FULL_SCORE})</p>
+            `;
+        }
+
+        // 显示提示
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #4ade80, #22c55e);
+                color: #fff;
+                padding: 15px 30px;
+                border-radius: 25px;
+                font-weight: bold;
+                z-index: 1000;
+                animation: fadeInDown 0.5s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => toast.remove(), 500);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
